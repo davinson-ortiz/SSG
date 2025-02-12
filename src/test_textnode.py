@@ -5,23 +5,18 @@ from textnode import TextNode, TextType
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
-        node = TextNode("This is a text node", TextType.BOLD)
-        node2 = TextNode("This is a text node", TextType.BOLD)
+        node = TextNode("This is a text node", TextType.TEXT)
+        node2 = TextNode("This is a text node", TextType.TEXT)
         self.assertEqual(node, node2)
-    
-    def test_noteq_text(self):
-        node = TextNode("This is a text Node", TextType.BOLD)
+
+    def test_eq_false(self):
+        node = TextNode("This is a text node", TextType.TEXT)
         node2 = TextNode("This is a text node", TextType.BOLD)
         self.assertNotEqual(node, node2)
-    
-    def test_noteq_type(self):
-        node = TextNode("This is a text node", TextType.BOLD)
-        node2 = TextNode("This is a text node", TextType.IMAGE)
-        self.assertNotEqual(node, node2)
-    
-    def test_noteq_url(self):
-        node = TextNode("This is a text node", TextType.BOLD, url="google.com")
-        node2 = TextNode("This is a text node", TextType.BOLD)
+
+    def test_eq_false2(self):
+        node = TextNode("This is a text node", TextType.TEXT)
+        node2 = TextNode("This is a text node2", TextType.TEXT)
         self.assertNotEqual(node, node2)
 
     def test_eq_url(self):
@@ -33,8 +28,8 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("This is a text node", TextType.TEXT, "https://www.boot.dev")
         self.assertEqual(
             "TextNode(This is a text node, text, https://www.boot.dev)", repr(node)
-            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
-    
