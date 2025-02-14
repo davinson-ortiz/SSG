@@ -67,5 +67,28 @@ class TestHTMLNode(unittest.TestCase):
             'Click me!'
         )
 
+    def test_ParentNode(self):
+        node = ParentNode(
+            "p",
+            [
+                LeafNode("b", "Bold text"),
+                LeafNode(None, "Normal text"),
+                LeafNode("i", "italic text"),
+                LeafNode(None, "Normal text"),
+            ],
+        )
+        self.assertEqual(
+            node.to_html(),
+            "<p><b>Bold text</b>Normal text<i>italic text</i>Normal text</p>"
+        )
+        
+        node = ParentNode(
+            "p", [LeafNode("b", "Bold text")]
+        )
+        self.assertEqual(
+            node.to_html(),
+            "<p><b>Bold text</b></p>"
+        )
+
 if __name__ == "__main__":
     unittest.main()
