@@ -44,3 +44,28 @@ def text_node_to_html_node(text_node: TextNode):
             return LeafNode("img", "", {"src": text_node.url, "alt": text_node.text})
         case _:
             raise ValueError(f"invalid text type: {text_node.text_type}")
+
+
+def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: TextType) -> list[TextNode]:
+    new_nodes = []
+    for old_node in old_nodes:
+        # Skip non-TEXT nodes (preserve as-is)
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+        # Split the text by delimiter
+        sections = old_node.text.split(delimiter)
+        # Check for balanced delimiters (odd number of sections means balanced)
+        if len(sections) % 2 == 0:
+            raise SyntaxError(f"Invalid markdown: opening delimiter '{delimiter}' without matching closing delimiter")
+        # Process each section, keeping track of its type based on position
+        for i, text in enumerate(sections):
+            # Skip empty sections only if they're regular text (optional, based on requirements)
+            if text == "" and i % 2 == 0:
+                continue
+            # Determine the appropriate text type based on position
+            section_type = text_type if i % 2 == 1 else TextType.TEXT
+            # Add to result list
+            new_nodes.append(TextNode(text, section_type))
+       
+    return new_nodes
