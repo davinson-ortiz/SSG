@@ -1,5 +1,6 @@
 from enum import Enum
 from htmlnode import LeafNode
+import re
 
 
 class TextType(Enum):
@@ -67,5 +68,51 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
             section_type = text_type if i % 2 == 1 else TextType.TEXT
             # Add to result list
             new_nodes.append(TextNode(text, section_type))
+       
+    return new_nodes
+
+
+def extract_markdown_images(text: str) -> list[tuple]:
+    return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text) or re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        # Skip non-TEXT nodes (preserve as-is)
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+        
+        text = old_node.text
+        for image in extract_markdown_images(text):
+            image_alt, image_link = image
+            img_delimiter = f"![{image_alt}]({image_link})"
+            # Split the text by delimiter
+            sections = text.split(img_delimiter, 1)
+            new_nodes.append(TextNode(sections[0], TextType.TEXT))
+            new_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
+            text = sections[-1]
+       
+    return new_nodes
+
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        # Skip non-TEXT nodes (preserve as-is)
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+        
+        text = old_node.text
+        for link in extract_markdown_images(text):
+            link_alt, link = link
+            link_delimiter = f"[{link_alt}]({link})"
+            # Split the text by delimiter
+            sections = text.split(link_delimiter, 1)
+            new_nodes.append(TextNode(sections[0], TextType.TEXT))
+            new_nodes.append(TextNode(link_alt, TextType.LINK, link))
+            text = sections[-1]
        
     return new_nodes
