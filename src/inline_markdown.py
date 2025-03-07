@@ -27,7 +27,7 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
     return new_nodes
 
 
-def extract_markdown_images(text: str) -> list[tuple]:
+def extract_markdown_image(text: str) -> list[tuple]:
     return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     
 
@@ -44,15 +44,25 @@ def split_nodes_image(old_nodes):
             continue
         
         text = old_node.text
-        for image in extract_markdown_images(text):
+        images = extract_markdown_image(text)
+        if not images:
+            new_nodes.append(old_node)        
+            continue
+        for image in images:
             image_alt, image_link = image
             img_delimiter = f"![{image_alt}]({image_link})"
             # Split the text by delimiter
             sections = text.split(img_delimiter, 1)
-            new_nodes.append(TextNode(sections[0], TextType.TEXT))
+            if len(sections) != 2:
+                raise ValueError("invalid markdown, image section not closed")
+            if sections[0] != "":  
+                new_nodes.append(TextNode(sections[0], TextType.TEXT))
             new_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
-            text = sections[-1]
-       
+
+            text = sections[1]
+        if text != "":
+            new_nodes.append(TextNode(text, TextType.TEXT))
+
     return new_nodes
 
 
@@ -65,13 +75,23 @@ def split_nodes_link(old_nodes):
             continue
         
         text = old_node.text
-        for link in extract_markdown_link(text):
+        links = extract_markdown_link(text)
+        if not links:
+            new_nodes.append(old_node)
+            break
+        for link in links:
             link_alt, link = link
             link_delimiter = f"[{link_alt}]({link})"
+            
             # Split the text by delimiter
             sections = text.split(link_delimiter, 1)
-            new_nodes.append(TextNode(sections[0], TextType.TEXT))
+            if len(sections) != 2:
+                raise ValueError("invalid markdown, image section not closed")
+            if sections[0] != "":
+                new_nodes.append(TextNode(sections[0], TextType.TEXT))
             new_nodes.append(TextNode(link_alt, TextType.LINK, link))
-            text = sections[-1]
-       
+            text = sections[1]
+        if text != "":
+            new_nodes.append(TextNode(text, TextType.TEXT))
+    
     return new_nodes
