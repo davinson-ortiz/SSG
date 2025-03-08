@@ -48,9 +48,11 @@ def split_nodes_image(old_nodes):
         if not images:
             new_nodes.append(old_node)        
             continue
+        
         for image in images:
             image_alt, image_link = image
             img_delimiter = f"![{image_alt}]({image_link})"
+            
             # Split the text by delimiter
             sections = text.split(img_delimiter, 1)
             if len(sections) != 2:
@@ -58,15 +60,15 @@ def split_nodes_image(old_nodes):
             if sections[0] != "":  
                 new_nodes.append(TextNode(sections[0], TextType.TEXT))
             new_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
-
             text = sections[1]
+        
         if text != "":
             new_nodes.append(TextNode(text, TextType.TEXT))
 
     return new_nodes
 
 
-def split_nodes_link(old_nodes):
+def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
     new_nodes = []
     for old_node in old_nodes:
         # Skip non-TEXT nodes (preserve as-is)
@@ -78,7 +80,8 @@ def split_nodes_link(old_nodes):
         links = extract_markdown_link(text)
         if not links:
             new_nodes.append(old_node)
-            break
+            continue
+        
         for link in links:
             link_alt, link = link
             link_delimiter = f"[{link_alt}]({link})"
@@ -86,12 +89,40 @@ def split_nodes_link(old_nodes):
             # Split the text by delimiter
             sections = text.split(link_delimiter, 1)
             if len(sections) != 2:
-                raise ValueError("invalid markdown, image section not closed")
+                raise ValueError("invalid markdown, link section not closed")
             if sections[0] != "":
                 new_nodes.append(TextNode(sections[0], TextType.TEXT))
             new_nodes.append(TextNode(link_alt, TextType.LINK, link))
             text = sections[1]
+        
         if text != "":
             new_nodes.append(TextNode(text, TextType.TEXT))
     
     return new_nodes
+
+
+def text_to_textnodes(text):
+    # Start with a single node containing the entire text as plain text.
+    nodes = [TextNode(text, TextType.TEXT)]
+
+    # Sequentially process the nodes for images, links, code, bold, and italic.
+    processing_steps = [
+        (split_nodes_image, None),  # No additional args needed for images
+        (split_nodes_link, None),   # No additional args needed for links
+        (split_nodes_delimiter, ("`", TextType.CODE)),  # Code delimiters
+        (split_nodes_delimiter, ("**", TextType.BOLD)), # Bold delimiters
+        (split_nodes_delimiter, ("_", TextType.ITALIC)) # Italic delimiters
+    ]
+
+    # Apply each processing step to the nodes.
+    for process_func, args in processing_steps:
+        if args:
+            nodes = process_func(nodes, *args)
+        else:
+            nodes = process_func(nodes)
+
+    return nodes
+
+
+result = text_to_textnodes("This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)")
+print(*result, sep="\n")
