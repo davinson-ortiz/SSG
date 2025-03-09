@@ -1,6 +1,6 @@
 import unittest
 from text_node import TextNode, TextType
-from inline_markdown import split_nodes_delimiter, extract_markdown_image, extract_markdown_link, split_nodes_image, split_nodes_link
+from inline_markdown import split_nodes_delimiter, extract_markdown_image, extract_markdown_link, split_nodes_image, split_nodes_link, text_to_textnodes
 
 
 class TestTextNodeSplitting(unittest.TestCase):
@@ -418,6 +418,110 @@ class TestLinkNodeSplitting(unittest.TestCase):
             self.assertEqual(result[i].text_type, expected[i].text_type)
             self.assertEqual(result[i].url, expected[i].url)
 
+
+class TestTextToTextNodes(unittest.TestCase):
+    
+    def test_text_to_textnodes_basic(self):
+        # Test plain text
+        text = "This is just plain text"
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].text, text)
+        self.assertEqual(result[0].text_type, TextType.TEXT)
+    
+    def test_text_to_textnodes_individual_elements(self):
+        # Test each markdown element type individually
+        
+        # Bold text
+        text = "This has **bold** text"
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0].text, "This has ")
+        self.assertEqual(result[0].text_type, TextType.TEXT)
+        self.assertEqual(result[1].text, "bold")
+        self.assertEqual(result[1].text_type, TextType.BOLD)
+        self.assertEqual(result[2].text, " text")
+        self.assertEqual(result[2].text_type, TextType.TEXT)
+        
+        # Italic text
+        text = "This has _italic_ text"
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[1].text, "italic")
+        self.assertEqual(result[1].text_type, TextType.ITALIC)
+        
+        # Code text
+        text = "This has `code` text"
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[1].text, "code")
+        self.assertEqual(result[1].text_type, TextType.CODE)
+        
+        # Link
+        text = "This has a [link](https://example.com) in it"
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[1].text, "link")
+        self.assertEqual(result[1].text_type, TextType.LINK)
+        self.assertEqual(result[1].url, "https://example.com")
+        
+        # Image
+        text = "This has an ![image](https://example.com/img.jpg) in it"
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[1].text, "image")
+        self.assertEqual(result[1].text_type, TextType.IMAGE)
+        self.assertEqual(result[1].url, "https://example.com/img.jpg")
+    
+    def test_text_to_textnodes_multiple_elements(self):
+        # Test with multiple different markdown elements in sequence
+        text = "This has **bold** and _italic_ and `code` elements"
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 7)
+        element_types = [node.text_type for node in result]
+        self.assertEqual(element_types, [
+            TextType.TEXT,  # "This has "
+            TextType.BOLD,  # "bold"
+            TextType.TEXT,  # " and "
+            TextType.ITALIC,  # "italic"
+            TextType.TEXT,  # " and "
+            TextType.CODE,  # "code"
+            TextType.TEXT,  # " elements"
+        ])
+        
+        # Test with links and images
+        text = "Check this [link](url1) and this ![image](url2)"
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 4)
+        self.assertEqual(result[1].text_type, TextType.LINK)
+        self.assertEqual(result[3].text_type, TextType.IMAGE)
+    
+    def test_text_to_textnodes_sequential_elements(self):
+        # Test with sequential elements of the same type
+        text = "**Bold1**_Italic1_**Bold2**_Italic2_"
+        result = text_to_textnodes(text)
+        self.assertEqual(len(result), 4)
+        element_types = [node.text_type for node in result]
+        self.assertEqual(element_types, [
+            TextType.BOLD,  # "Bold1"
+            TextType.ITALIC,  # "Italic1"
+            TextType.BOLD,  # "Bold2"
+            TextType.ITALIC,  # "Italic2"
+        ])
+    
+    def test_text_to_textnodes_error_cases(self):
+        # Test unbalanced delimiters
+        with self.assertRaises(SyntaxError):
+            text_to_textnodes("This has **unbalanced bold")
+        
+        with self.assertRaises(SyntaxError):
+            text_to_textnodes("This has _unbalanced italic")
+        
+        with self.assertRaises(SyntaxError):
+            text_to_textnodes("This has `unbalanced code")
+        
+    
+  
 # Run the tests
 if __name__ == "__main__":
     unittest.main()
