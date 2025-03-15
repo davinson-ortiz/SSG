@@ -35,7 +35,7 @@ This is another paragraph with _italic_ text and `code` here
 
 
 def text_to_children(text):
-    for html
+    ...
 
 if __name__ == "__main__":
     main()
