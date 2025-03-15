@@ -35,7 +35,7 @@ def extract_markdown_link(text:str)-> list[tuple]:
     return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
 
 
-def split_nodes_image(old_nodes):
+def split_nodes_image(old_nodes: TextNode) -> list[TextNode]:
     new_nodes = []
     for old_node in old_nodes:
         # Skip non-TEXT nodes (preserve as-is)
@@ -101,7 +101,7 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
     return new_nodes
 
 
-def text_to_textnodes(text):
+def text_to_textnodes(text: str) -> list[TextNode]:
     # Start with a single node containing the entire text as plain text.
     nodes = [TextNode(text, TextType.TEXT)]
 
