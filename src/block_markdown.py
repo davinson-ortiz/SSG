@@ -77,41 +77,32 @@ def markdown_to_blocks(markdown: str) -> list[str]:
     return blocks
 
 
-def markdown_to_html_node(markdown):
-    block_nodes = []
+def markdown_to_html_node(markdown: str) -> ParentNode:
     blocks = markdown_to_blocks(markdown)
+    children = []
     for block in blocks:
-        block_type = block_to_block_type(block)
-        match block_type:
-            case BlockType.PARAGRAPH:
-                # Paragraphs are wrapped in <p> tags
-                block_nodes.append(HTMLNode("p", block))
-            case BlockType.HEADING:
-                # Headings are wrapped in <h1> to <h6> tags based on the number of #
-                heading_level = block.count("#")
-                if heading_level < 1 or heading_level > 6:
-                    raise ValueError(f"Invalid heading level: {heading_level}")
-                block_nodes.append(HTMLNode(f"h{heading_level}", block.lstrip("# ")))
-            case BlockType.CODE:
-                # Code blocks are wrapped in <pre><code> tags
-                code_content = block.strip("```").strip()  # Remove Markdown code block delimiters
-                code_node = HTMLNode("code", code_content)
-                block_nodes.append(HTMLNode("pre", code_node))
-            case BlockType.QUOTE:
-                # Quote blocks are wrapped in <blockquote> tags
-                block_nodes.append(HTMLNode("blockquote", block.lstrip("> ")))
-            case BlockType.UNORDERED_LIST:
-                # Unordered lists are wrapped in <ul> tags, with each item in <li> tags
-                list_items = block.split("\n")
-                li_nodes = [HTMLNode("li", item.lstrip("- ")) for item in list_items]
-                block_nodes.append(HTMLNode("ul", li_nodes))
-            case BlockType.ORDERED_LIST:
-                # Ordered lists are wrapped in <ol> tags, with each item in <li> tags
-                list_items = block.split("\n")
-                li_nodes = [HTMLNode("li", item.split(". ", 1)[1]) for item in list_items]
-                block_nodes.append(HTMLNode("ol", li_nodes))
-            case _:
-                raise ValueError(f"Unknown block type: {block_type}")
+        html_node = block_to_html_node(block)
+        children.append(html_node)
+    return ParentNode("div", children, None)
+
+
+def block_to_html_node(block: str) -> ParentNode:
+    block_type = block_to_block_type(block)
+    match block_type:
+        case BlockType.PARAGRAPH:
+            return paragraph_to_html_node(block)
+        case BlockType.HEADING:
+            return heading_to_html_node(block)
+        case BlockType.CODE:
+            return code_to_html_node(block)
+        case BlockType.QUOTE:
+            return quote_to_html_node(block)
+        case BlockType.UNORDERED_LIST:
+            return ulist_to_html_node(block)
+        case BlockType.ORDERED_LIST:
+            return olist_to_html_node(block)
+        case _:
+            raise ValueError(f"Unknown block type: {block_type}")
 
 
 def text_to_children(text: str) -> list[HTMLNode]:
@@ -130,23 +121,15 @@ def paragraph_to_html_node(block):
     return ParentNode("p", children)
 
 
-def heading_to_html_node(block):
-    level = 0
-    for char in block:
-        if char == "#":
-            level += 1
-        else:
-            break
-    if level + 1 >= len(block):
-        raise ValueError(f"invalid heading level: {level}")
-    text = block[level + 1 :]
+def heading_to_html_node(block: str) -> ParentNode:
+    # Headings are wrapped in <h1> to <h6> tags based on the number of #
+    heading_level = block.count("#", 0, 7)
+    text = block[heading_level + 1 :]
     children = text_to_children(text)
-    return ParentNode(f"h{level}", children)
+    return ParentNode(f"h{heading_level}", children)
 
 
 def code_to_html_node(block):
-    if not block.startswith("```") or not block.endswith("```"):
-        raise ValueError("invalid code block")
     text = block[4:-3]
     raw_text_node = TextNode(text, TextType.TEXT)
     child = text_node_to_html_node(raw_text_node)

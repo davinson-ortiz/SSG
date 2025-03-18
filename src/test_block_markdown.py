@@ -1,5 +1,20 @@
 import unittest
-from block_markdown import markdown_to_blocks, BlockType, block_to_block_type
+from html_node import HTMLNode, ParentNode
+from block_markdown import (
+    markdown_to_blocks, 
+    BlockType, 
+    block_to_block_type,
+    markdown_to_html_node, 
+    block_to_html_node, 
+    text_to_children,
+    paragraph_to_html_node,
+    code_to_html_node,
+    ulist_to_html_node,
+    olist_to_html_node,
+    quote_to_html_node,
+    heading_to_html_node
+)
+
 
 class TestMarkdownToBlocks(unittest.TestCase):
     
@@ -230,6 +245,105 @@ class TestBlockTypeDetection(unittest.TestCase):
             block_to_block_type("- Outer list item with ```code``` block inside"),
             BlockType.UNORDERED_LIST
         )
+
+
+class TestMarkdownToHTML(unittest.TestCase):
+
+    def test_markdown_to_html_node(self):
+        markdown = "# Heading\n\nSome paragraph\n\n- List item"
+        html_node = markdown_to_html_node(markdown)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "div")
+        self.assertEqual(len(html_node.children), 3)
+
+    def test_block_to_html_node_paragraph(self):
+        block = "This is a paragraph."
+        html_node = block_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "p")
+
+    def test_block_to_html_node_heading(self):
+        block = "### Heading 3"
+        html_node = block_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "h3")
+
+    def test_block_to_html_node_code(self):
+        block = "```\ncode block\n```"
+        html_node = block_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "pre")
+        self.assertEqual(html_node.children[0].tag, "code")
+
+    def test_block_to_html_node_quote(self):
+        block = "> Quote line 1\n> Quote line 2"
+        html_node = block_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "blockquote")
+
+    def test_block_to_html_node_unordered_list(self):
+        block = "- Item 1\n- Item 2"
+        html_node = block_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "ul")
+        self.assertEqual(len(html_node.children), 2)
+
+    def test_block_to_html_node_ordered_list(self):
+        block = "1. Item 1\n2. Item 2"
+        html_node = block_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "ol")
+        self.assertEqual(len(html_node.children), 2)
+
+    def test_text_to_children(self):
+        text = "This is **bold** and *italic* text."
+        children = text_to_children(text)
+        self.assertIsInstance(children, list)
+        self.assertTrue(all(isinstance(child, HTMLNode) for child in children))
+
+    def test_paragraph_to_html_node(self):
+        block = "This is a paragraph."
+        html_node = paragraph_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "p")
+
+    def test_heading_to_html_node(self):
+        block = "## Heading 2"
+        html_node = heading_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "h2")
+
+    def test_code_to_html_node(self):
+        block = "```\ncode block\n```"
+        html_node = code_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "pre")
+        self.assertEqual(html_node.children[0].tag, "code")
+
+    def test_olist_to_html_node(self):
+        block = "1. First item\n2. Second item"
+        html_node = olist_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "ol")
+        self.assertEqual(len(html_node.children), 2)
+
+    def test_ulist_to_html_node(self):
+        block = "- First item\n- Second item"
+        html_node = ulist_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "ul")
+        self.assertEqual(len(html_node.children), 2)
+
+    def test_quote_to_html_node(self):
+        block = "> Quote line 1\n> Quote line 2"
+        html_node = quote_to_html_node(block)
+        self.assertIsInstance(html_node, ParentNode)
+        self.assertEqual(html_node.tag, "blockquote")
+
+    def test_quote_to_html_node_invalid(self):
+        block = "> Valid line\nInvalid line"
+        with self.assertRaises(ValueError):
+            quote_to_html_node(block)
 
 
 if __name__ == "__main__":
