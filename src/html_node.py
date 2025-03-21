@@ -18,11 +18,11 @@ class HTMLNode:
  
     
 class LeafNode(HTMLNode):
-    def __init__(self, tag, value, props=None):
+    def __init__(self, tag: str, value: str, props: dict = None):
         super().__init__(tag, value, None, props)
         
-    def to_html(self):
-        if not self.value:
+    def to_html(self) -> str:
+        if self.value is None:
             raise ValueError("All leaf nodes must have a value.")
         
         if self.tag is None:
@@ -33,15 +33,16 @@ class LeafNode(HTMLNode):
             
         return f"{open_tag}{self.value}{close_tag}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"LeafNode(tag={self.tag}, value={self.value}, props={self.props})"
  
     
 class ParentNode(HTMLNode):
-    def __init__(self, tag, children, props=None):
+    def __init__(self, tag: str, children: list[LeafNode], props=None):
         super().__init__(tag, None, children, props)
     
-    def to_html(self):
+    def to_html(self) -> str:
+        """Create a html tree"""
         if not self.tag:
             raise ValueError("invalid HTML: no tag")
         if not self.children:
