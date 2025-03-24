@@ -43,6 +43,7 @@ El proceso de un **Static Site Generator** sigue tres etapas principales:
 
 
 ## 🎯 ¿Cuándo usar un SSG?
+
 - **Blogs y sitios de documentación** (ej. la documentación de React usa Docusaurus).
 - **Portafolios personales**.
 - **Landing pages y sitios corporativos**.
