@@ -44,7 +44,7 @@ def generate_page(content_path, template, dest_path, basepath):
         )
         
         if basepath != "/":
-            filled_template = (template
+            filled_template = (filled_template
                 .replace('href="/', f'href="{basepath}')
                 .replace('src="/', f'src="{basepath}')
                 )
