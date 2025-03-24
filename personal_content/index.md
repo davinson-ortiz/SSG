@@ -41,14 +41,6 @@ El proceso de un **Static Site Generator** sigue tres etapas principales:
 - **Eleventy (11ty)** (ligero y flexible en JavaScript)
 - **Nuxt.js** (para Vue.js, puede funcionar como SSG)
 
-## 🔄 Diferencia con SSR y CSR
-
-| Característica  | SSG (Static Site) | SSR (Server-Side Rendering) | CSR (Client-Side Rendering) |
-|---------------|------------------|----------------------------|----------------------------|
-| **Generación** | Antes del despliegue | En cada solicitud al servidor | En el navegador del usuario |
-| **Velocidad** | 🚀 Súper rápido (CDN) | 🏎️ Depende del servidor | 🐢 Inicial lento, luego rápido |
-| **Interactividad** | 🌟 Limitada sin JS | ✅ Dinámico en cada carga | ✅ Muy dinámico |
-| **Escalabilidad** | 📈 Alta (bajo costo) | 📉 Depende del servidor | 📈 Alta pero puede ser lento |
 
 ## 🎯 ¿Cuándo usar un SSG?
 - **Blogs y sitios de documentación** (ej. la documentación de React usa Docusaurus).
