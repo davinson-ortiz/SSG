@@ -8,7 +8,7 @@ from generate_content import generate_pages_recursive
 dir_path_static = "./static"
 # dir_path_public = "./public"
 dir_path_docs = "./docs" # For github pages!!!
-dir_path_content = "./personal_content"
+dir_path_content = "./content"
 template_path = "./template.html"
 
 def main():
@@ -16,7 +16,7 @@ def main():
         basepath = sys.argv[1]
     else:
         basepath = "/"
-    print("basepath: ", basepath)
+
     # Limpiar directorio público antes de copiar (opcional)
     if os.path.exists(dir_path_docs):
         rmtree(dir_path_docs)
