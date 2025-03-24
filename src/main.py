@@ -8,7 +8,7 @@ from generate_content import generate_pages_recursive
 dir_path_static = "./static"
 # dir_path_public = "./public"
 dir_path_docs = "./docs" # For github pages!!!
-dir_path_content = "./content"
+dir_path_content = "./personal_content"
 template_path = "./template.html"
 
 def main():
